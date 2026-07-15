@@ -7,11 +7,15 @@
 [![Dataset](https://img.shields.io/badge/Dataset-Argoverse%202-6f42c1.svg)](https://www.argoverse.org/av2.html)
 [![Status](https://img.shields.io/badge/status-research%20prototype-orange.svg)](#project-status)
 
+<p align="center">
+  <img src="assets/rare_event_vru_pipeline.svg" width="100%" alt="Rare-Event VRU Motion Forecasting pipeline">
+</p>
+
 ## Overview
 
 Most motion-forecasting models are optimized for average performance. This can hide poor behavior on the rare trajectories that matter most in safety-critical driving scenarios: abrupt turns, sudden acceleration, sharp braking, unusual lane changes, and aggressive cyclist or motorcyclist maneuvers.
 
-This project studies **rare-event tail forecasting for vulnerable road users (VRUs)** using the Argoverse 2 Motion Forecasting Dataset. The current pipeline:
+This project studies **rare-event tail forecasting for vulnerable road users (VRUs)** using the Argoverse 2 Motion Forecasting Dataset. The pipeline:
 
 1. extracts pedestrian, cyclist, and motorcyclist focal agents;
 2. transforms trajectories into a local agent-centric coordinate frame;
@@ -21,9 +25,7 @@ This project studies **rare-event tail forecasting for vulnerable road users (VR
 6. evaluates normal and tail trajectories separately;
 7. investigates a multi-task tail-aware forecasting model.
 
-The central research question is:
-
-> **Can tail-event performance be improved without degrading average forecasting accuracy?**
+> **Research question:** Can tail-event performance be improved without degrading average forecasting accuracy?
 
 ---
 
@@ -31,7 +33,7 @@ The central research question is:
 
 Average Displacement Error (ADE) and Final Displacement Error (FDE) are useful global metrics, but they are dominated by frequent and relatively predictable trajectories. In real road-safety applications, a forecasting system must also handle low-frequency, high-risk behavior.
 
-Cyclists and motorcyclists are particularly important because they:
+Cyclists and motorcyclists are especially important because they:
 
 - have more variable dynamics than pedestrians;
 - can accelerate and change direction rapidly;
@@ -146,8 +148,6 @@ The current approach therefore normalizes features and applies the 95th-percenti
 
 ### 1. Kinematic baselines
 
-Two non-learning baselines were implemented:
-
 - **Constant Velocity**
 - **Constant Acceleration**
 
@@ -258,8 +258,6 @@ Tail classification:
 | Recall | 0.4020 |
 | F1-score | 0.2654 |
 
-Confusion matrix:
-
 ```text
 TP = 41
 TN = 1741
@@ -291,16 +289,9 @@ Validation evaluation for v2 is the next experimental step.
 
 ## Preliminary findings
 
-The project currently supports three main conclusions:
-
-1. **A global tail-event threshold is biased across VRU classes.**  
-   Class-wise labeling is necessary because pedestrians, cyclists, and motorcyclists have different natural motion distributions.
-
-2. **Rare trajectories are substantially harder to predict.**  
-   The GRU baseline reaches 2.5283 m normal FDE versus 6.3666 m tail FDE.
-
-3. **Naive oversampling can degrade both average and tail performance.**  
-   Tail awareness cannot be introduced by simply repeating rare samples until the training set appears balanced.
+1. **A global tail-event threshold is biased across VRU classes.** Class-wise labeling is necessary because pedestrians, cyclists, and motorcyclists have different natural motion distributions.
+2. **Rare trajectories are substantially harder to predict.** The GRU baseline reaches 2.5283 m normal FDE versus 6.3666 m tail FDE.
+3. **Naive oversampling can degrade both average and tail performance.** Tail awareness cannot be introduced by simply repeating rare samples until the training set appears balanced.
 
 These are preliminary research findings, not final claims.
 
@@ -308,10 +299,10 @@ These are preliminary research findings, not final claims.
 
 ## Repository structure
 
-The intended project structure is:
-
 ```text
 rare-event-vru-motion-forecasting/
+├── assets/
+│   └── rare_event_vru_pipeline.svg
 ├── models/
 │   ├── gru.py
 │   └── tail_gru.py
@@ -336,27 +327,15 @@ Model checkpoints, generated CSV files, and the Argoverse 2 dataset should not b
 
 ## Installation
 
-Clone the repository:
-
 ```bash
 git clone https://github.com/panagiotagrosdouli/rare-event-vru-motion-forecasting.git
 cd rare-event-vru-motion-forecasting
-```
-
-Create and activate a virtual environment:
-
-```bash
 python3 -m venv venv
 source venv/bin/activate
-```
-
-Install dependencies:
-
-```bash
 pip install -r requirements.txt
 ```
 
-The main dependencies are expected to include:
+Main dependencies:
 
 ```text
 torch
