@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.pyc
+
+train/
+val/
+test/
+
+outputs/*.pth
+outputs/*.pt
+
+.ipynb_checkpoints/
+.DS_Store
