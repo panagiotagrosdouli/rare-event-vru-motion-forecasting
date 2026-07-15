@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Rare-Event VRU Motion Forecasting Pipeline</title>
+  <desc id="desc">Research pipeline from Argoverse 2 trajectory extraction through class-wise tail labeling, GRU forecasting, and normal-versus-tail evaluation.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fbff"/>
+      <stop offset="1" stop-color="#eef4fb"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#173f73"/>
+      <stop offset="1" stop-color="#2d6ca8"/>
+    </linearGradient>
+    <linearGradient id="tail" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff3f1"/>
+      <stop offset="1" stop-color="#ffe4df"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#173f73" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0 0 L12 6 L0 12 Z" fill="#45627e"/>
+    </marker>
+    <style>
+      .title{font:700 50px Arial,sans-serif;fill:#143b69}
+      .subtitle{font:400 23px Arial,sans-serif;fill:#53677f}
+      .card-title{font:700 22px Arial,sans-serif;fill:#173f73}
+      .card-text{font:400 17px Arial,sans-serif;fill:#425a73}
+      .small{font:400 15px Arial,sans-serif;fill:#5c7186}
+      .label{font:700 16px Arial,sans-serif;fill:#173f73}
+      .metric{font:700 27px Arial,sans-serif;fill:#173f73}
+      .metric-red{font:700 27px Arial,sans-serif;fill:#c34a3d}
+      .chip{font:700 15px Arial,sans-serif}
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1450" cy="95" r="120" fill="#dbe9f8" opacity="0.45"/>
+  <circle cx="120" cy="800" r="150" fill="#dfeef8" opacity="0.45"/>
+
+  <text x="800" y="72" text-anchor="middle" class="title">Rare-Event VRU Motion Forecasting</text>
+  <text x="800" y="112" text-anchor="middle" class="subtitle">Cyclists and motorcyclists • Argoverse 2 • Safety-critical tail analysis</text>
+
+  <!-- Top pipeline cards -->
+  <g filter="url(#shadow)">
+    <rect x="55" y="165" width="260" height="230" rx="24" fill="#ffffff" stroke="#c9d8e8"/>
+    <rect x="355" y="165" width="260" height="230" rx="24" fill="#ffffff" stroke="#c9d8e8"/>
+    <rect x="655" y="165" width="260" height="230" rx="24" fill="#ffffff" stroke="#c9d8e8"/>
+    <rect x="955" y="165" width="260" height="230" rx="24" fill="#ffffff" stroke="#c9d8e8"/>
+    <rect x="1255" y="165" width="290" height="230" rx="24" fill="url(#tail)" stroke="#efb4aa"/>
+  </g>
+
+  <!-- Card 1 -->
+  <circle cx="105" cy="220" r="26" fill="#e7f0fb"/>
+  <path d="M90 231 Q104 202 119 231" fill="none" stroke="#2d6ca8" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="105" cy="209" r="7" fill="#2d6ca8"/>
+  <text x="145" y="215" class="card-title">Argoverse 2</text>
+  <text x="145" y="243" class="card-text">Motion forecasting data</text>
+  <text x="82" y="294" class="label">VRU focal agents</text>
+  <text x="82" y="326" class="card-text">🚶 Pedestrian</text>
+  <text x="82" y="354" class="card-text">🚲 Cyclist</text>
+  <text x="82" y="382" class="card-text">🏍 Motorcyclist</text>
+
+  <!-- Card 2 -->
+  <circle cx="405" cy="220" r="26" fill="#e7f0fb"/>
+  <path d="M390 223 L404 236 L422 201" fill="none" stroke="#2d6ca8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="445" y="215" class="card-title">Preprocessing</text>
+  <text x="445" y="243" class="card-text">Agent-centric coordinates</text>
+  <line x1="405" y1="333" x2="565" y2="333" stroke="#6a8299" stroke-width="2"/>
+  <line x1="465" y1="365" x2="465" y2="278" stroke="#6a8299" stroke-width="2"/>
+  <polyline points="395,352 420,347 440,340 465,333 490,320 520,302 555,291" fill="none" stroke="#2d6ca8" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="465" cy="333" r="7" fill="#c34a3d"/>
+  <text x="382" y="382" class="small">Last observed point → (0,0)</text>
+
+  <!-- Card 3 -->
+  <circle cx="705" cy="220" r="26" fill="#e7f0fb"/>
+  <path d="M689 225 h8 l5-17 8 32 7-20 h12" fill="none" stroke="#2d6ca8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="745" y="215" class="card-title">Motion features</text>
+  <text x="745" y="243" class="card-text">Kinematic statistics</text>
+  <text x="690" y="291" class="card-text">• Maximum speed</text>
+  <text x="690" y="326" class="card-text">• Maximum acceleration</text>
+  <text x="690" y="361" class="card-text">• Heading change</text>
+
+  <!-- Card 4 -->
+  <circle cx="1005" cy="220" r="26" fill="#e7f0fb"/>
+  <path d="M991 235 C997 205 1016 205 1021 235" fill="none" stroke="#2d6ca8" stroke-width="4"/>
+  <line x1="1000" y1="231" x2="1000" y2="204" stroke="#2d6ca8" stroke-width="3"/>
+  <text x="1045" y="215" class="card-title">Class-wise scoring</text>
+  <text x="1045" y="243" class="card-text">Within-class rarity</text>
+  <rect x="990" y="285" width="190" height="26" rx="13" fill="#e6eef7"/>
+  <rect x="990" y="285" width="160" height="26" rx="13" fill="#7ca6d1"/>
+  <rect x="1150" y="285" width="30" height="26" rx="13" fill="#db6759"/>
+  <text x="995" y="338" class="small">Normal: 95%</text>
+  <text x="1080" y="338" class="small">Tail: top 5%</text>
+  <text x="990" y="374" class="small">Separate threshold per VRU class</text>
+
+  <!-- Card 5 -->
+  <circle cx="1305" cy="220" r="26" fill="#ffe2dc"/>
+  <path d="M1290 224 L1300 234 L1320 204" fill="none" stroke="#c34a3d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1345" y="215" class="card-title">Tail benchmark</text>
+  <text x="1345" y="243" class="card-text">Normal vs. rare trajectories</text>
+  <rect x="1290" y="282" width="215" height="42" rx="12" fill="#ffffff" stroke="#df9d92"/>
+  <text x="1397" y="309" text-anchor="middle" class="label">15,745 normal</text>
+  <rect x="1290" y="338" width="215" height="42" rx="12" fill="#c34a3d"/>
+  <text x="1397" y="365" text-anchor="middle" class="chip" fill="#ffffff">830 tail events</text>
+
+  <!-- Arrows -->
+  <line x1="315" y1="280" x2="345" y2="280" stroke="#45627e" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="615" y1="280" x2="645" y2="280" stroke="#45627e" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="915" y1="280" x2="945" y2="280" stroke="#45627e" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="1215" y1="280" x2="1245" y2="280" stroke="#45627e" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <!-- Model section -->
+  <g filter="url(#shadow)">
+    <rect x="80" y="455" width="690" height="230" rx="25" fill="#ffffff" stroke="#c9d8e8"/>
+    <rect x="830" y="455" width="690" height="230" rx="25" fill="#ffffff" stroke="#c9d8e8"/>
+  </g>
+  <rect x="80" y="455" width="690" height="54" rx="25" fill="url(#blue)"/>
+  <rect x="830" y="455" width="690" height="54" rx="25" fill="url(#blue)"/>
+  <text x="425" y="491" text-anchor="middle" font-family="Arial" font-size="23" font-weight="700" fill="#ffffff">Baseline GRU</text>
+  <text x="1175" y="491" text-anchor="middle" font-family="Arial" font-size="23" font-weight="700" fill="#ffffff">Tail-Aware Multi-Task GRU</text>
+
+  <!-- Baseline architecture -->
+  <text x="120" y="552" class="small">Past trajectory</text>
+  <polyline points="130,620 155,612 178,600 202,604 230,580" fill="none" stroke="#2d6ca8" stroke-width="4"/>
+  <line x1="250" y1="600" x2="300" y2="600" stroke="#45627e" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="320" y="555" width="135" height="90" rx="16" fill="#e8f1fb" stroke="#83a8cd"/>
+  <text x="388" y="592" text-anchor="middle" class="label">GRU</text>
+  <text x="388" y="619" text-anchor="middle" class="small">encoder</text>
+  <line x1="455" y1="600" x2="505" y2="600" stroke="#45627e" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="525" y="555" width="135" height="90" rx="16" fill="#e8f1fb" stroke="#83a8cd"/>
+  <text x="592" y="592" text-anchor="middle" class="label">Trajectory</text>
+  <text x="592" y="619" text-anchor="middle" class="small">decoder</text>
+  <polyline points="680,620 700,606 722,595 748,575" fill="none" stroke="#2d6ca8" stroke-width="4"/>
+
+  <!-- Tail-aware architecture -->
+  <text x="870" y="552" class="small">Past trajectory</text>
+  <polyline points="880,620 905,612 928,600 952,604 980,580" fill="none" stroke="#2d6ca8" stroke-width="4"/>
+  <line x1="1000" y1="600" x2="1045" y2="600" stroke="#45627e" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="1065" y="555" width="125" height="90" rx="16" fill="#e8f1fb" stroke="#83a8cd"/>
+  <text x="1128" y="592" text-anchor="middle" class="label">Shared GRU</text>
+  <text x="1128" y="619" text-anchor="middle" class="small">encoder</text>
+  <line x1="1190" y1="580" x2="1250" y2="545" stroke="#45627e" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="1190" y1="620" x2="1250" y2="650" stroke="#45627e" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="1270" y="520" width="175" height="65" rx="14" fill="#e8f1fb" stroke="#83a8cd"/>
+  <text x="1358" y="558" text-anchor="middle" class="label">Trajectory head</text>
+  <rect x="1270" y="615" width="175" height="65" rx="14" fill="#fff0ed" stroke="#df9d92"/>
+  <text x="1358" y="653" text-anchor="middle" font-family="Arial" font-size="16" font-weight="700" fill="#b94539">Tail classifier</text>
+
+  <!-- Results -->
+  <g filter="url(#shadow)">
+    <rect x="80" y="735" width="1440" height="115" rx="24" fill="#ffffff" stroke="#c9d8e8"/>
+  </g>
+  <text x="120" y="774" class="card-title">Baseline finding</text>
+  <text x="120" y="810" class="card-text">Rare trajectories are substantially harder to predict.</text>
+  <line x1="570" y1="758" x2="570" y2="828" stroke="#d4e0ec" stroke-width="2"/>
+  <text x="625" y="779" class="small">Normal FDE</text>
+  <text x="625" y="817" class="metric">2.53 m</text>
+  <text x="815" y="779" class="small">Tail FDE</text>
+  <text x="815" y="817" class="metric-red">6.37 m</text>
+  <text x="1010" y="779" class="small">Motorcyclist tail FDE</text>
+  <text x="1010" y="817" class="metric-red">20.58 m</text>
+  <rect x="1295" y="766" width="180" height="50" rx="25" fill="#173f73"/>
+  <text x="1385" y="798" text-anchor="middle" font-family="Arial" font-size="17" font-weight="700" fill="#ffffff">Safety-critical focus</text>
+</svg>
