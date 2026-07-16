@@ -1,16 +1,15 @@
-import torch
 import torch.nn as nn
 
 
 class TailAwareGRU(nn.Module):
     """
-    Multi-task GRU
+    Multi-task GRU.
 
     Task 1:
-        Future trajectory prediction
+        Future trajectory prediction.
 
     Task 2:
-        Tail event classification
+        Tail-event classification.
     """
 
     def __init__(
@@ -32,36 +31,24 @@ class TailAwareGRU(nn.Module):
         )
 
         self.trajectory_head = nn.Sequential(
-
-            nn.Linear(hidden_size,256),
+            nn.Linear(hidden_size, 256),
             nn.ReLU(),
-
-            nn.Linear(256,128),
+            nn.Linear(256, 128),
             nn.ReLU(),
-
-            nn.Linear(
-                128,
-                future_steps*2,
-            )
+            nn.Linear(128, future_steps * 2),
         )
 
         self.tail_head = nn.Sequential(
-
-            nn.Linear(hidden_size,64),
+            nn.Linear(hidden_size, 64),
             nn.ReLU(),
-
-            nn.Linear(64,1)
-
+            nn.Linear(64, 1),
         )
 
-    def forward(self,past):
-
-        _,hidden = self.encoder(past)
-
+    def forward(self, past):
+        _, hidden = self.encoder(past)
         hidden = hidden[-1]
 
         future = self.trajectory_head(hidden)
-
         future = future.view(
             -1,
             self.future_steps,
@@ -69,5 +56,4 @@ class TailAwareGRU(nn.Module):
         )
 
         tail_logits = self.tail_head(hidden)
-
-        return future,tail_logits.squeeze(1)
+        return future, tail_logits.squeeze(1)
