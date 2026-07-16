@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections import defaultdict
 from pathlib import Path
 
-import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 
@@ -49,9 +48,7 @@ def safe_divide(numerator: float, denominator: float) -> float:
 
 def main() -> None:
     if not MODEL_PATH.exists():
-        raise FileNotFoundError(
-            f"Model not found: {MODEL_PATH}"
-        )
+        raise FileNotFoundError(f"Model not found: {MODEL_PATH}")
 
     print("Using device:", DEVICE)
 
@@ -100,12 +97,7 @@ def main() -> None:
         for batch in loader:
             past = batch["past"].float().to(DEVICE)
             future = batch["future"].float().to(DEVICE)
-
-            tail_target = (
-                batch["tail_event"]
-                .long()
-                .to(DEVICE)
-            )
+            tail_target = batch["tail_event"].long().to(DEVICE)
 
             predicted_future, tail_logits = model(past)
 
@@ -115,29 +107,19 @@ def main() -> None:
             )
 
             tail_probability = torch.sigmoid(tail_logits)
-
-            tail_prediction = (
-                tail_probability >= 0.5
-            ).long()
+            tail_prediction = (tail_probability >= 0.5).long()
 
             true_positive += (
-                (tail_prediction == 1)
-                & (tail_target == 1)
+                (tail_prediction == 1) & (tail_target == 1)
             ).sum().item()
-
             true_negative += (
-                (tail_prediction == 0)
-                & (tail_target == 0)
+                (tail_prediction == 0) & (tail_target == 0)
             ).sum().item()
-
             false_positive += (
-                (tail_prediction == 1)
-                & (tail_target == 0)
+                (tail_prediction == 1) & (tail_target == 0)
             ).sum().item()
-
             false_negative += (
-                (tail_prediction == 0)
-                & (tail_target == 1)
+                (tail_prediction == 0) & (tail_target == 1)
             ).sum().item()
 
             batch_ade = batch_ade.cpu().tolist()
@@ -187,10 +169,7 @@ def main() -> None:
 
     accuracy = safe_divide(
         true_positive + true_negative,
-        true_positive
-        + true_negative
-        + false_positive
-        + false_negative,
+        true_positive + true_negative + false_positive + false_negative,
     )
 
     print("\n" + "=" * 60)
@@ -216,31 +195,12 @@ def main() -> None:
 
     for object_type in sorted(class_ade):
         print(f"\n{object_type}:")
-        print(
-            f"  ADE: "
-            f"{mean_or_nan(class_ade[object_type]):.4f} m"
-        )
-        print(
-            f"  FDE: "
-            f"{mean_or_nan(class_fde[object_type]):.4f} m"
-        )
-        print(
-            f"  Samples: "
-            f"{len(class_ade[object_type])}"
-        )
-
-        print(
-            f"  Tail ADE: "
-            f"{mean_or_nan(class_tail_ade[object_type]):.4f} m"
-        )
-        print(
-            f"  Tail FDE: "
-            f"{mean_or_nan(class_tail_fde[object_type]):.4f} m"
-        )
-        print(
-            f"  Tail samples: "
-            f"{len(class_tail_ade[object_type])}"
-        )
+        print(f"  ADE: {mean_or_nan(class_ade[object_type]):.4f} m")
+        print(f"  FDE: {mean_or_nan(class_fde[object_type]):.4f} m")
+        print(f"  Samples: {len(class_ade[object_type])}")
+        print(f"  Tail ADE: {mean_or_nan(class_tail_ade[object_type]):.4f} m")
+        print(f"  Tail FDE: {mean_or_nan(class_tail_fde[object_type]):.4f} m")
+        print(f"  Tail samples: {len(class_tail_ade[object_type])}")
 
     print("\nTail classification metrics:")
     print(f"Accuracy:  {accuracy:.4f}")
