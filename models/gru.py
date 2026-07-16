@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 
 
@@ -32,13 +31,10 @@ class GRUTrajectoryPredictor(nn.Module):
         )
 
         self.decoder = nn.Sequential(
-
             nn.Linear(hidden_size, 256),
             nn.ReLU(),
-
             nn.Linear(256, 128),
             nn.ReLU(),
-
             nn.Linear(
                 128,
                 future_steps * 2,
@@ -46,17 +42,13 @@ class GRUTrajectoryPredictor(nn.Module):
         )
 
     def forward(self, past):
-
         _, hidden = self.gru(past)
-
         hidden = hidden[-1]
 
         future = self.decoder(hidden)
-
         future = future.view(
             -1,
             self.future_steps,
             2,
         )
-
         return future
