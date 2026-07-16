@@ -1,0 +1,14 @@
+repository_audit: Implemented
+training_only_rarity_statistics: Implemented
+leakage_tests: Implemented
+fixture_mode: Synthetic Validation
+argoverse_dataset_run: Pending Full-Dataset Validation
+multimodal_gru: Research Prototype
+ensemble_uncertainty: Research Prototype
+heteroscedastic_uncertainty: Research Prototype
+conformal_endpoint_regions: Synthetic Validation
+streamlit_lab: Research Prototype
+publication_figures: Synthetic Validation
+trajectory_gif: Planned
+research_mp4: Planned
+clean_checkout: Pending Environment Validation
