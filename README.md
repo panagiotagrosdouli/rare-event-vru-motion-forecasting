@@ -1,6 +1,6 @@
 # Rare-Event VRU Motion Forecasting
 
-> **Trajectory forecasting for pedestrians, cyclists, and motorcyclists, with a focus on rare and safety-critical motion patterns.**
+> **A research prototype for forecasting pedestrian, cyclist, and motorcyclist trajectories, with explicit evaluation of rare and safety-critical motion patterns.**
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-ee4c2c.svg)](https://pytorch.org/)
@@ -11,37 +11,79 @@
   <img src="assets/rare_event_vru_pipeline.svg" width="100%" alt="Rare-Event VRU Motion Forecasting pipeline">
 </p>
 
-## Overview
+## At a glance
 
-Most motion-forecasting models are optimized for average performance. This can hide poor behavior on the rare trajectories that matter most in safety-critical driving scenarios: abrupt turns, sudden acceleration, sharp braking, unusual lane changes, and aggressive cyclist or motorcyclist maneuvers.
+**Research question**
 
-This project studies **rare-event tail forecasting for vulnerable road users (VRUs)** using the Argoverse 2 Motion Forecasting Dataset. The pipeline:
+> Can a forecasting model improve performance on statistically rare VRU trajectories without sacrificing accuracy on normal motion?
 
-1. extracts pedestrian, cyclist, and motorcyclist focal agents;
-2. transforms trajectories into a local agent-centric coordinate frame;
-3. derives motion statistics such as speed, acceleration, and heading change;
-4. labels statistically rare trajectories within each VRU class;
-5. trains GRU-based trajectory-forecasting baselines;
-6. evaluates normal and tail trajectories separately;
-7. investigates a multi-task tail-aware forecasting model.
+**What is implemented**
 
-> **Research question:** Can tail-event performance be improved without degrading average forecasting accuracy?
+- Argoverse 2 pedestrian, cyclist, and motorcyclist extraction.
+- Agent-centric trajectory normalization.
+- Class-wise rare-event labeling from motion statistics.
+- Constant-velocity and constant-acceleration baselines.
+- A GRU trajectory predictor.
+- A multi-task GRU with an auxiliary tail-event classifier.
+- Separate evaluation of normal and tail subsets.
+- Failure analysis of naive rare-event oversampling.
+
+**Current central finding**
+
+The baseline GRU reaches **2.5283 m FDE on normal trajectories** and **6.3666 m FDE on tail trajectories**. Rare trajectories are therefore substantially harder, while the first tail-aware experiment shows that naive balanced oversampling can produce negative transfer rather than improve tail forecasting.
+
+```text
+Argoverse 2 VRU trajectories
+            ↓
+Agent-centric preprocessing
+            ↓
+Class-wise rare-event labeling
+            ↓
+Kinematic and GRU forecasting
+            ↓
+Normal-versus-tail evaluation
+            ↓
+Tail-aware model diagnosis
+```
 
 ---
 
-## Motivation
+## Research objective
 
-Average Displacement Error (ADE) and Final Displacement Error (FDE) are useful global metrics, but they are dominated by frequent and relatively predictable trajectories. In real road-safety applications, a forecasting system must also handle low-frequency, high-risk behavior.
+Most forecasting models are optimized for average performance. This can hide poor behavior on the low-frequency trajectories that matter most in safety-critical driving scenarios, including abrupt turns, sudden acceleration, sharp braking, unusual lateral motion, and aggressive cyclist or motorcyclist maneuvers.
+
+This project studies **rare-event tail forecasting for vulnerable road users (VRUs)**. Its objective is not only to reduce global Average Displacement Error (ADE) and Final Displacement Error (FDE), but also to measure and improve performance on difficult tail cases separately.
+
+The repository should be interpreted as a controlled research prototype for studying this problem, not as a production autonomous-driving forecasting system.
+
+---
+
+## Main contributions
+
+1. **VRU-specific Argoverse 2 pipeline** for pedestrians, cyclists, and motorcyclists.
+2. **Agent-centric preprocessing** that removes global translation and orientation.
+3. **Class-wise statistical tail labeling**, avoiding a single threshold across road-user classes with different natural dynamics.
+4. **Normal-versus-tail evaluation** using ADE and FDE.
+5. **Per-class tail analysis**, exposing the particularly high errors observed for cyclist and motorcyclist tail subsets.
+6. **Tail-aware multi-task GRU**, combining trajectory forecasting with auxiliary rare-event classification.
+7. **Negative-result analysis**, showing that naive balanced oversampling can degrade both normal and tail forecasting.
+8. **Explicit methodological limitations**, including the need to derive validation labels from training statistics only.
+
+---
+
+## Why tail-aware evaluation?
+
+Average ADE and FDE are dominated by frequent and relatively predictable trajectories. A model can therefore achieve good average performance while failing badly on rare behavior.
 
 Cyclists and motorcyclists are especially important because they:
 
-- have more variable dynamics than pedestrians;
+- exhibit more variable dynamics than pedestrians;
 - can accelerate and change direction rapidly;
 - are underrepresented in many public datasets;
 - are highly exposed in collisions;
 - may perform uncommon but safety-critical maneuvers near intersections.
 
-A model with good average ADE may still fail badly on exactly these cases.
+A safety-oriented forecasting study should therefore report both average accuracy and tail-subset accuracy.
 
 ---
 
@@ -97,7 +139,7 @@ This reduces irrelevant variation caused by absolute map position and global ori
 
 ## Tail-event definition
 
-A **tail event** is a statistically rare motion pattern within the same road-user class.
+A **tail event** is defined here as a statistically rare motion pattern within the same road-user class.
 
 For each trajectory, the pipeline computes:
 
@@ -106,7 +148,7 @@ For each trajectory, the pipeline computes:
 - mean and maximum heading change;
 - total displacement.
 
-A preliminary tail score is defined as:
+The preliminary score is:
 
 ```text
 tail_score = 0.4 × normalized_max_speed
@@ -118,7 +160,7 @@ The top 5% of trajectories are labeled as tail events.
 
 ### Why class-wise labeling?
 
-A global threshold is biased because the natural dynamics of each class differ. A normal motorcyclist is typically faster than a normal pedestrian. Under one shared threshold, many ordinary motorcyclist trajectories were incorrectly classified as rare.
+A global threshold is biased because the natural dynamics of each class differ. A normal motorcyclist is typically faster than a normal pedestrian. Under one shared threshold, many ordinary motorcyclist trajectories can be incorrectly classified as rare.
 
 The current approach therefore normalizes features and applies the 95th-percentile threshold **separately for each class**.
 
@@ -140,7 +182,7 @@ The current approach therefore normalizes features and applies the 95th-percenti
 | Motorcyclist | 127 | 7 |
 | **Total** | **1,907** | **102** |
 
-> **Important methodological note:** the current prototype computed validation scaling and thresholds independently on the validation split. For publication-quality evaluation, all normalization parameters and thresholds must be estimated on the training split only and then applied unchanged to validation and test data.
+> **Important methodological limitation:** the current prototype computed validation scaling and thresholds independently on the validation split. Publication-quality evaluation must estimate normalization parameters and tail thresholds from the training split only, then apply them unchanged to validation and test data.
 
 ---
 
@@ -181,19 +223,21 @@ The training objective is:
 L = L_trajectory + λ L_tail
 ```
 
-The tail classifier is an auxiliary task intended to encourage the encoder to learn representations associated with difficult motion patterns.
+The auxiliary classifier is intended to encourage the shared representation to encode motion patterns associated with difficult trajectories.
 
 ---
 
-## Evaluation metrics
+## Evaluation protocol
 
-### Average Displacement Error
+### Forecasting metrics
+
+**Average Displacement Error**
 
 ```text
 ADE = mean Euclidean distance between predicted and ground-truth future positions
 ```
 
-### Final Displacement Error
+**Final Displacement Error**
 
 ```text
 FDE = Euclidean distance at the final prediction step
@@ -206,11 +250,20 @@ Results are reported for:
 - tail trajectories;
 - each VRU class separately.
 
-Tail classification is evaluated using precision, recall, F1-score, and a confusion matrix. Accuracy alone is not considered sufficient because tail events represent only about 5% of the data.
+### Tail classification metrics
+
+The auxiliary classifier is evaluated using:
+
+- precision;
+- recall;
+- F1-score;
+- confusion matrix.
+
+Accuracy alone is not considered sufficient because tail events represent only about 5% of the data.
 
 ---
 
-## Current results
+## Current experimental results
 
 ### Kinematic baselines
 
@@ -237,7 +290,7 @@ Tail trajectories have approximately **2.5× larger FDE** than normal trajectori
 | Cyclist | 1.9071 | 4.2605 | 4.1668 | 9.8823 | 16 |
 | Motorcyclist | 3.8395 | 9.6487 | 7.7591 | 20.5818 | 7 |
 
-The motorcyclist tail subset is the most difficult, although the validation sample count is currently too small for strong statistical conclusions.
+The motorcyclist tail subset is the most difficult, although seven tail samples are too few to support a strong statistical conclusion.
 
 ### Tail-Aware GRU v1
 
@@ -267,9 +320,9 @@ FN = 61
 
 The v1 model did **not** improve forecasting. Oversampling the limited tail set likely distorted the trajectory-learning distribution and produced negative transfer.
 
-### Tail-Aware GRU v2 training
+### Tail-Aware GRU v2 status
 
-The second experiment:
+The revised experiment:
 
 - removes balanced sampling;
 - preserves the original data distribution;
@@ -283,17 +336,18 @@ Best observed training trajectory loss:
 3.1569
 ```
 
-Validation evaluation for v2 is the next experimental step.
+Validation evaluation for v2 is still pending. The training loss alone is not presented as evidence of improved forecasting.
 
 ---
 
 ## Preliminary findings
 
-1. **A global tail-event threshold is biased across VRU classes.** Class-wise labeling is necessary because pedestrians, cyclists, and motorcyclists have different natural motion distributions.
-2. **Rare trajectories are substantially harder to predict.** The GRU baseline reaches 2.5283 m normal FDE versus 6.3666 m tail FDE.
-3. **Naive oversampling can degrade both average and tail performance.** Tail awareness cannot be introduced by simply repeating rare samples until the training set appears balanced.
+1. **A global tail threshold is biased across VRU classes.** Class-wise labeling is more appropriate because pedestrians, cyclists, and motorcyclists have different natural motion distributions.
+2. **Rare trajectories are substantially harder to predict.** The baseline GRU reaches 2.5283 m normal FDE versus 6.3666 m tail FDE.
+3. **Naive oversampling can degrade both average and tail performance.** Tail awareness cannot be introduced simply by repeating rare samples until the training set appears balanced.
+4. **Tail conclusions require uncertainty estimates.** The cyclist and motorcyclist tail subsets are small, so confidence intervals and repeated-seed experiments are necessary before making stronger claims.
 
-These are preliminary research findings, not final claims.
+These are preliminary simulation and dataset-based findings, not final publication claims.
 
 ---
 
@@ -377,7 +431,22 @@ Paths may need to be adjusted according to the local Argoverse 2 directory struc
 
 ---
 
-## Roadmap
+## Methodological limitations
+
+1. Validation tail statistics are currently estimated from the validation split itself rather than frozen from training data.
+2. The weighted tail score and its coefficients are preliminary design choices.
+3. Tail labels represent statistical rarity, not human-reviewed semantic danger.
+4. The current predictor is deterministic and unimodal.
+5. Map context, social interaction, traffic signals, and sensor inputs are not modeled.
+6. Results have not yet been repeated across multiple random seeds.
+7. Cyclist and motorcyclist tail sample counts are small.
+8. Stronger modern motion-forecasting baselines have not yet been included.
+
+These limitations separate what the current experiments demonstrate from the intended research direction.
+
+---
+
+## Research roadmap
 
 - [x] Extract VRU focal-agent trajectories from Argoverse 2
 - [x] Implement agent-centric trajectory normalization
@@ -394,16 +463,17 @@ Paths may need to be adjusted according to the local Argoverse 2 directory struc
 - [ ] Add qualitative trajectory visualizations
 - [ ] Investigate human-reviewed tail-event annotation
 - [ ] Compare against stronger motion-forecasting baselines
+- [ ] Add uncertainty-aware or multimodal prediction
 
 ---
 
-## Research direction
+## Long-term research direction
 
 The long-term goal is to build a curated rare-event benchmark for cyclists and motorcyclists and develop forecasting methods that improve safety-critical tail performance without sacrificing normal-case accuracy.
 
-A motivating real-world case is a motorcycle approaching an intersection and suddenly overtaking a stopped or slowing vehicle. A forecasting system that predicts only the average motion pattern may continue the motorcycle along its previous path, while a tail-aware model should better capture the possibility of a rapid lateral maneuver.
+A motivating case is a motorcycle approaching an intersection and suddenly overtaking a stopped or slowing vehicle. A model optimized only for the average trajectory may continue the motorcycle along its previous path, while a tail-aware or multimodal model should represent the possibility of rapid lateral motion.
 
-Potential future extensions include:
+Potential extensions include:
 
 - uncertainty-aware and multimodal forecasting;
 - class-conditioned tail definitions;
